@@ -73,10 +73,10 @@ function signInWithPreviousAccount() {
             //     window.location.href = "index.html";
             // }
         } else {
-            // Go to registration page and show it
-            showBody();
-            
-            if (!(currentPage.includes("registration.html"))) {
+            // Go to registration page and show it            
+            if (currentPage.includes("registration.html")) {
+                showBody();
+            } else {
                 window.location.href = "registration.html";
             }
         }

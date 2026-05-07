@@ -1,40 +1,37 @@
 
 
 const tbody = document.querySelector(".leaderboard tbody");
-var numberOfRows = 5;
+
+var desiredNumberOfRows = 5;
 
 async function readLeaderboardByKey(key) {
     const FILEPATH = "userPublicDetails";
-    const snapshot = await readSortedFirebase(FILEPATH, key, numberOfRows);
+    const snapshot = Object.values(
+        await readSortedFirebase(FILEPATH, key, desiredNumberOfRows));
 
-    console.log(snapshot);
+    console.log(snapshot); //DIAG
     
     //Add the top scores to the highscore table
     tbody.innerHTML = "";
 
-    Object.values(snapshot).forEach((userInformation) => {
+    snapshot.forEach((userInformation) => {
         console.log(userInformation);
-        prependRow(userInformation);
+        prependRow(userInformation, snapshot.length);
     });
 
     // Remove arrows from all other elements and add it to this one
     // document.querySelectorAll(".arrows").forEach((span) => span.innerHTML = "");
     // element.querySelector("span").innerHTML = "▼";
 }
-function prependRow(userInformation) {
+function prependRow(userInformation, totalRows) {
     const row = document.createElement("tr");
-    row.innerHTML = `<td>1</td>
+    var rank = totalRows - tbody.childElementCount;
+    row.innerHTML = `<td>${rank}</td>
                     <td>${userInformation.name}</td>
-                    <td>${userInformation.mazeGameHighScore}</td>`;
+                    <td>${userInformation.mazeGameHighScore}</td>
+                    <td>${userInformation.gamesPlayed}</td>
+                    <td>${userInformation.winRate}</td>`;;
     tbody.prepend(row);
 }
-function updateRow(row, userInformation) {
-    row.querySelector("td:nth-child(2)").textContent = userInformation.mazeGameHighScore;
-    row.querySelector("td:nth-child(3)").textContent = userInformation.coinGameHighScore;
-}
 
-// TODO
-// Readsorted isnt defined for some reason
-// Add checks for invalid keys and filepaths on the readSorted
-// Check that the read sorted function actually sorts the children
 readLeaderboardByKey("mazeGameHighScore");
