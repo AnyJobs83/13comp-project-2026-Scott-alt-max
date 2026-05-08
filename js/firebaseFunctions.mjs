@@ -134,7 +134,7 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
         if (snapshot == null) throw ("Attempting to read a value that doesn't exist");
 
         var data = snapshot.val();
-        console.log("Successfully read sorted database information:");
+        console.log("Successfully read sorted database information");
         return data;
     }).catch((error) => {
         console.log("Error with reading the sorted database");

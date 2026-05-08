@@ -75,3 +75,19 @@ th:nth-child(2), td:nth-child(2) {
 .sortable {
     cursor: pointer;
 }
+.sortable:hover {
+    color: grey;
+}
+.sort-by::after {
+    content: " ▼";
+    font-size: 0.8em;
+}
+
+/* Styling for the edit button */
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 20;
+}

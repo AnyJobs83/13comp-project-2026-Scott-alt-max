@@ -1,37 +1,54 @@
 
 
 const tbody = document.querySelector(".leaderboard tbody");
-
 var desiredNumberOfRows = 5;
 
-async function readLeaderboardByKey(key) {
+// Functions for sorting the leaderboard and adding rows to the table
+
+async function sortBy(key, element) {
+    // Read the highscores from firebase
     const FILEPATH = "userPublicDetails";
-    const snapshot = Object.values(
+    const sortedData = Object.values(
         await readSortedFirebase(FILEPATH, key, desiredNumberOfRows));
 
-    console.log(snapshot); //DIAG
-    
     //Add the top scores to the highscore table
     tbody.innerHTML = "";
 
-    snapshot.forEach((userInformation) => {
-        console.log(userInformation);
-        prependRow(userInformation, snapshot.length);
+    sortedData.forEach((userInformation) => {
+        prependRow(userInformation, sortedData.length);
     });
 
-    // Remove arrows from all other elements and add it to this one
-    // document.querySelectorAll(".arrows").forEach((span) => span.innerHTML = "");
-    // element.querySelector("span").innerHTML = "▼";
+    // Change the arrow to be on the column that is being sorted by
+    document.querySelectorAll(".sortable").forEach((header) => {
+        header.classList.remove("sort-by");
+    });
+    element.classList.add("sort-by");
 }
 function prependRow(userInformation, totalRows) {
     const row = document.createElement("tr");
     var rank = totalRows - tbody.childElementCount;
-    row.innerHTML = `<td>${rank}</td>
-                    <td>${userInformation.name}</td>
-                    <td>${userInformation.mazeGameHighScore}</td>
-                    <td>${userInformation.gamesPlayed}</td>
-                    <td>${userInformation.winRate}</td>`;;
+    row.innerHTML = `
+        <td>${rank}</td>
+        <td>${userInformation.name}</td>
+        <td>${userInformation.mazeGameHighScore}</td>
+        <td>${userInformation.gamesPlayed}</td>
+        <td>${userInformation.winRate}</td>
+        <span class="material-symbols-outlined" onclick="editCell(this.parentElement)">edit</span>`;
     tbody.prepend(row);
 }
 
-readLeaderboardByKey("mazeGameHighScore");
+// Functions for all of the admin functionality
+function editCell(cell) {
+    var currentValue = cell.innerText;
+    var input = document.createElement("input");
+    input.type = "text";
+    input.value = currentValue;
+    cell.innerHTML = "";
+    cell.appendChild(input);
+    input.focus();
+}
+
+
+
+// By default, sort by maze game high score
+sortBy("mazeGameHighScore", document.querySelector(".sort-by"));
