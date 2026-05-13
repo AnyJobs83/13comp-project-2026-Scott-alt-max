@@ -2,20 +2,23 @@
 
 const tbody = document.querySelector(".leaderboard tbody");
 var desiredNumberOfRows = 5;
+var sortedBy = "mazeGameHighScore";
 
+// ------------------------------------------------------------------------------
 // Functions for sorting the leaderboard and adding rows to the table
+// ------------------------------------------------------------------------------
 
 async function sortBy(key, element) {
     // Read the highscores from firebase
     const FILEPATH = "userPublicDetails";
-    const sortedData = Object.values(
-        await readSortedFirebase(FILEPATH, key, desiredNumberOfRows));
+    const sortedData = Object.entries(await readSortedFirebase(FILEPATH, key, desiredNumberOfRows));
 
-    //Add the top scores to the highscore table
+    // Clear the table then add the sorted data
     tbody.innerHTML = "";
 
-    sortedData.forEach((userInformation) => {
-        prependRow(userInformation, sortedData.length);
+    sortedData.forEach(([userID, userInformation]) => {
+        console.log(userInformation, tbody.childElementCount);
+        prependRow(userID, userInformation, sortedData.length);
     });
 
     // Change the arrow to be on the column that is being sorted by
@@ -24,7 +27,7 @@ async function sortBy(key, element) {
     });
     element.classList.add("sort-by");
 }
-function prependRow(userInformation, totalRows) {
+function prependRow(userID, userInformation, totalRows) {
     const row = document.createElement("tr");
     var rank = totalRows - tbody.childElementCount;
     row.innerHTML = `
@@ -34,18 +37,26 @@ function prependRow(userInformation, totalRows) {
         <td>${userInformation.gamesPlayed}</td>
         <td>${userInformation.winRate}</td>
         <td class="edit"><span class="material-symbols-outlined" onclick="editRow(this.parentElement.parentElement)">edit</span></td>`;
-    tbody.prepend(row);
+    row.dataset.userID = userID;
+    tbody.append(row);
 }
 
+// ------------------------------------------------------------------------------
 // Functions for all of the admin editing stuff
+// ------------------------------------------------------------------------------
 
 // TODO
+// IT ISNT SORTING BY THE SORTEDBY VARIABLE IT JUST SORTS MAZE GAME HIGHSCORE NO MATTER WHAT
+// ALSO DONT THINK THAT IT SHOULD BE LIMIT TO LAST, THINK IT SHOULD BE LIMIT TO FIRST, BUT TEST BOTH
+
+// Make is so that when you try to re read the data base it says loading
 // Make it write the information to the database with each users' userID
 // Make it be able to read all of the private information
 // Make it so that this only works for admins
+
 function editRow(row) {
-    // Read the current values from the row and store them in a array
-    const oldRow = row;
+    // Read the current values from the row and store them as HTML string
+    const oldRowHTML = row.innerHTML;
 
     // Skip the rank and edit columns, but change the other cells to be inputs
     for (let i = 1; i < row.children.length - 1; i++) {
@@ -55,49 +66,39 @@ function editRow(row) {
 
     // Now change the edit icon to be both a check mark and an X
     const editCell = row.children[row.children.length - 1];
+    
     editCell.innerHTML = `
-        <span class="material-symbols-outlined" onclick="cancelEdit(${row}, ${oldRow})">close</span>
-        <span class="material-symbols-outlined" onclick="submitEdit(${row})">check</span>
+        <span class="material-symbols-outlined close-btn">close</span>
+        <span class="material-symbols-outlined check-btn">check</span>
     `;
 
-    // TODO
-    // const editCell = row.lastElementChild;
-
-    // const closeBtn = Object.assign(document.createElement("span"), {
-    //     className: "material-symbols-outlined",
-    //     textContent: "close"
-    // });
-
-    // const checkBtn = Object.assign(document.createElement("span"), {
-    //     className: "material-symbols-outlined",
-    //     textContent: "check"
-    // });
-
-    // closeBtn.onclick = () => cancelEdit(row, oldRow);
-    // checkBtn.onclick = () => submitEdit(row);
-
-    // editCell.replaceChildren(closeBtn, checkBtn);
+    editCell.querySelector(".close-btn").addEventListener("click", () => cancelEdit(row, oldRowHTML));
+    editCell.querySelector(".check-btn").addEventListener("click", () => submitEdit(row));
 }
 
 // Runs when the check is clicked for submitting an edit
-function submitEdit(row) {
-    // Get the updated values from the input fields
-    const updatedValues = [];
-    for (let i = 1; i < row.children.length - 1; i++) {
-        updatedValues.push(row.children[i].querySelector(".edit-input").value);
+async function submitEdit(row) {
+    // Get the updated values from the input fields and store them in an object
+    var editedInformation = {
+        name: row.children[1].querySelector(".edit-input").value,
+        mazeGameHighScore: row.children[2].querySelector(".edit-input").value,
+        gamesPlayed: row.children[3].querySelector(".edit-input").value,
+        winRate: row.children[4].querySelector(".edit-input").value
     }
 
-    // Here you would typically update the database with the new values
-    // For now, we'll just log them
-    console.log("Updated Values:", updatedValues);
+    // Write the updated information to the database
+    const FILEPATH = "userPublicDetails/" + row.dataset.userID;
+    await writeFirebase(FILEPATH, editedInformation);
+    
+    // Redisplay the leaderboard
+    sortBy(sortedBy, document.querySelector(".sort-by"));
 }
 
 // Runs when the X is clicked for canceling an edit
-function cancelEdit(row, oldRow) {
+function cancelEdit(row, oldRowHTML) {
     // Change the cells back to their original values
-    row = oldRow;
+    row.innerHTML = oldRowHTML;
 }
 
-
 // By default, sort by maze game high score
-sortBy("mazeGameHighScore", document.querySelector(".sort-by"));
+sortBy(sortedBy, document.querySelector(".default-sort-by"));

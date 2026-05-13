@@ -128,7 +128,7 @@ function readFirebase(FILEPATH) {
     });
 }
 function readSortedFirebase(FILEPATH, KEY, LIMIT) {
-    const REF = query(ref(database, FILEPATH), orderByChild(KEY), limitToLast(LIMIT));
+    const REF = query(ref(database, FILEPATH), orderByChild(KEY), limitToFirst(LIMIT));
 
     return get(REF).then((snapshot) => {
         if (snapshot == null) throw ("Attempting to read a value that doesn't exist");
