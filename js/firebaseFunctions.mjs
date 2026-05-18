@@ -132,14 +132,15 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
 
     return get(REF).then((snapshot) => {
         if (snapshot == null) throw ("Attempting to read a value that doesn't exist");
-
-        var data = snapshot.val();
-        console.log("Successfully read sorted database information by key: " + KEY);
-        console.log(data);
         
-        // for (var line of Object.values(data)) {
-        //     console.log(line);
-        // };
+        var data = [];
+
+        snapshot.forEach((child) => {
+            data.push({
+                userID: child.key, 
+                userInformation: child.val()
+            });
+        });
 
         return data;
     }).catch((error) => {

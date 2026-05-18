@@ -16,18 +16,17 @@ async function sortBy(key, element) {
 
     // Read the highscores from firebase
     const FILEPATH = "userPublicDetails";
-    const sortedData = Object.entries(await readSortedFirebase(FILEPATH, key, desiredNumberOfRows));
-
-    // Reverse to show highest first
-    sortedData.reverse();
+    const sortedData = await readSortedFirebase(FILEPATH, key, desiredNumberOfRows);
+    if (sortedData == null) { console.log("woopise sortedData is null"); return; }
 
     // Clear the table then add the sorted data
     tbody.innerHTML = "";
 
-    sortedData.forEach(([userID, userInformation]) => {
-        //console.log(userInformation, tbody.childElementCount);
-        prependRow(userID, userInformation, sortedData.length);
-    });
+    var trueNumberOfRows = sortedData.length;
+    for(var i = 0; i < trueNumberOfRows; i++) {
+        //console.log(sortedData[i].userInformation, tbody.childElementCount);
+        prependRow(sortedData[i].userID, sortedData[i].userInformation, trueNumberOfRows);
+    };
 
     // Change the arrow to be on the column that is being sorted by
     document.querySelectorAll(".sortable").forEach((header) => {
@@ -37,7 +36,7 @@ async function sortBy(key, element) {
 }
 function prependRow(userID, userInformation, totalRows) {
     const row = document.createElement("tr");
-    var rank = tbody.childElementCount + 1;
+    var rank = totalRows - tbody.childElementCount;
     row.innerHTML = `
         <td>${rank}</td>
         <td>${userInformation.name}</td>
@@ -46,7 +45,7 @@ function prependRow(userID, userInformation, totalRows) {
         <td>${userInformation.winRate}</td>
         <td class="edit"><span class="material-symbols-outlined" onclick="editRow(this.parentElement.parentElement)">edit</span></td>`;
     row.dataset.userID = userID;
-    tbody.append(row);
+    tbody.prepend(row);
 }
 
 // ------------------------------------------------------------------------------
