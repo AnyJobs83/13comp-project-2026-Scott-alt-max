@@ -34,6 +34,7 @@ async function createLobby() {
 
     // Change user to the waiting page
     isHost = true;
+    // test change
 }
 function guess(number) {
     /*
