@@ -1,10 +1,13 @@
 var isHost;
+var hostID;
 
 async function createLobby() {
+    isHost = true;
+
     // Write lobby to firebase
     const numToGuess = Math.floor(Math.random() * 101);
 
-    const hostID = await getUserIDFirebase();
+    hostID = await getUserIDFirebase();
 
     const hostNameFilePath = "userPublicDetails/" + hostID + "/name";
     const hostName = await readFirebase(hostNameFilePath);
@@ -28,35 +31,29 @@ async function createLobby() {
     };
 
     const lobbyFilePath = "lobbies/" + hostID;
-    writeFirebase(lobbyFilePath, lobbyInformation);
-    
-    console.log("WRITE WORKING");
+    await writeFirebase(lobbyFilePath, lobbyInformation);
 
     // Change user to the waiting page
-    isHost = true;
-    // test change
+    // TODO
 }
-function guess(number) {
-    /*
-    if host
-        // Create new round
-        stuff to write = {
-            hostGuess: number
-        }
-        filePath {
-            hostID/rounds/currentRound
-        }
 
-    if guest
-        // write
-        stuff to write = {
-            guestGuess: number
-        }
-        filePath {
-            hostID/rounds/currentRound
-        }
+/**
+ * Write the guess to firebase
+ * Either writes to hostGuess or guestGuess
+ * Will increase the current round if it is the guestGuess
+ */
+async function guess(number) {
+    const currentRoundFilepath = "lobbies/" + hostID + "/gameInformation/currentRound";
+    var currentRound = await readFirebase(currentRoundFilepath);
 
-        // uppdate currentRound
-        currentRound++
-    */
+    var filePath;
+    if (isHost) {
+        filePath = "lobbies/" + hostID + "/rounds/" + currentRound + "/hostGuess";
+    } else {
+        filePath = "lobbies/" + hostID + "/rounds/" + currentRound + "/guestGuess";
+        
+        writeFirebase(currentRoundFilepath, currentRound + 1);
+    }
+    
+    writeFirebase(filePath, number);
 }

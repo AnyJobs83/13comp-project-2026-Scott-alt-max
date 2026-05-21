@@ -152,6 +152,11 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
 
 // Functions to write to the database
 function writeFirebase(FILEPATH, DATA) {
+    if (typeof FILEPATH != "string") {
+        console.log(FILEPATH);
+        throw new Error("You are passing a filepath to the write function that isnt a string");
+    }
+
     const REF = ref(database, FILEPATH);
 
     set(REF, DATA).then(() => {
