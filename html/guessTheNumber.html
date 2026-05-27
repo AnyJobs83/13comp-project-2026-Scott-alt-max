@@ -29,25 +29,24 @@
         </nav>
         <main>
             <div class="gtn-box default-box" id="landing-page-box">
-                <button onclick="onCreateLobbyPressed()">
+                <button onclick="createLobby()">
                     create lobby
                 </button>
-                <button onclick="onJoinLobbyPressed()">
+                <button onclick="searchForLobby()">
                     join random lobby
                 </button>
             </div>
             <div class="gtn-box" id="waiting-for-guest-box">
                 <h2>Go get a friend</h2>
+                <button onclick="deleteLobby()">Cancel matchmaking</button>
             </div>
-            <div class="gtn-box" id="game-box">
-                <div class="your-turn-box">
-                    <p class="opponent-guess">Your opponent guessed: <span>54</span></p>
-                    <input class="guess-button" type="number" min="0" max="100">
-                    <button>Guess</button>
-                </div>
-                <div class="not-your-turn-box">
-                    <h2>Waiting for your opponent to guess</h2>
-                </div>
+            <div class="gtn-box game-box" id="your-turn-box">
+                <p class="opponent-guess">Your opponent guessed: <span>54</span></p>
+                <input class="guess-button" type="number" min="0" max="100" id="guess-input">
+                <button onclick="guess()">Guess</button>
+            </div>
+            <div class="gtn-box game-box" id="not-your-turn-box">
+                <h2>Waiting for your opponent to guess</h2>
             </div>
             <div class="gtn-box" id="game-over-box">
                 <h2>Game Over</h2>
@@ -59,6 +58,9 @@
             <div class="gtn-box" id="waiting-for-rematch-box">
                 <h2>Waiting for your friend to accept rematch</h2>
                 <button>Cancel rematch</button>
+            </div>
+            <div class="gtn-box" id="opponent-left-box">
+                <h2>Your friend left you :/</h2>
             </div>
         </main>
     </body>

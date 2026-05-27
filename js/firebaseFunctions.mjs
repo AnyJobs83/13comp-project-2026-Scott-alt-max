@@ -150,7 +150,13 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
     });
 }
 function addListenerFirebase(FILEPATH, FUNCTION) {
-    // TODO
+    const REF = ref(database, FILEPATH);
+
+    return onValue(REF, (snapshot) => {
+        const data = snapshot.val();
+
+        FUNCTION(data);
+    });
 }
 
 // Functions to write to the database
@@ -176,6 +182,7 @@ window.getUserIDFirebase = getUserIDFirebase;
 window.logoutFirebase = logoutFirebase;
 window.readFirebase = readFirebase;
 window.readSortedFirebase = readSortedFirebase;
+window.addListenerFirebase = addListenerFirebase;
 window.writeFirebase = writeFirebase;
 initialiseFirebase();
 signInWithPreviousAccount();
