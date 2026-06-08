@@ -51,10 +51,8 @@
             </div>
             <div class="gtn-box" id="game-over-box">
                 <h2>Game Over</h2>
-                <p class="rematch">Would you like to play again?</p>
-                <!-- <p class="want-rematch">Your friend wants to play again!</p>
-                <p class="no-rematch">Your friend left you :/</p> -->
-                <button onclick=`alert("not implemented yet :/")`>Rematch</button><button onclick=`alert("not implemented yet :/")`>Leave</button>
+                <p id="rematch">Would you like to play again?</p>
+                <button onclick="requestRematch()">Rematch</button><button onclick=`alert("not implemented yet :/")`>Leave</button>
             </div>
             <div class="gtn-box" id="waiting-for-rematch-box">
                 <h2>Waiting for your friend to accept rematch</h2>
@@ -62,6 +60,7 @@
             </div>
             <div class="gtn-box" id="opponent-left-box">
                 <h2>Your friend left you :/</h2>
+                <button>Leave</button>
             </div>
         </main>
     </body>

@@ -97,7 +97,7 @@ async function submit() {
 	function checkValid(inputObject) {
 		var value = inputObject.value;
 
-		if (!value) {
+		if (!value || value == "null") {
 			inputObject.classList.add("invalid");
 			inputObject.focus();
 
