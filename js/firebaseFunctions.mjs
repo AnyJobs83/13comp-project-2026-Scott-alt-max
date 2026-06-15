@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getDatabase, ref, set, get, update, query, orderByChild, limitToFirst, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+import { getDatabase, ref, set, get, update, query, orderByChild, limitToFirst, limitToLast, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 var database;
@@ -158,6 +158,11 @@ function addListenerFirebase(FILEPATH, FUNCTION) {
         FUNCTION(data);
     });
 }
+function deleteOnDisconnectFirebase(FILEPATH) {
+    const REF = ref(database, FILEPATH);
+
+    onDisconnect(ref).remove();
+}
 
 // Functions to write to the database
 function writeFirebase(FILEPATH, DATA) {
@@ -183,6 +188,7 @@ window.logoutFirebase = logoutFirebase;
 window.readFirebase = readFirebase;
 window.readSortedFirebase = readSortedFirebase;
 window.addListenerFirebase = addListenerFirebase;
+window.deleteOnDisconnectFirebase = deleteOnDisconnectFirebase;
 window.writeFirebase = writeFirebase;
 initialiseFirebase();
 signInWithPreviousAccount();

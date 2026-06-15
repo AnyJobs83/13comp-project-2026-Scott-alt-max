@@ -1,5 +1,6 @@
 var isHost;
 var hostID;
+var lobbyListener = null;
 
 /*******************************************
  * Functions that handle all lobby logic
@@ -44,6 +45,9 @@ async function createLobby() {
 
     const lobbyFilePath = "lobbies/" + hostID;
     await writeFirebase(lobbyFilePath, lobbyInformation);
+
+    // Create a listner that checks for the lobby getting deleted, which happens when anyone quits or disconnects
+    setUpOnDisconnect();
 
     // Change user to the waiting page
     await changeToGTNBox("waiting-for-guest-box");
@@ -90,12 +94,23 @@ async function searchForLobby() {
     }
 }
 function setUpOnDisconnect() {
+    const lobbyFilepath = "lobbies/" + hostID;
+
     // Make on disconnect that, when the player disconnects, it deletes the lobby
+    if (lobbyListener != null) lobbyListener.unsubscribe();
+    deleteOnDisconnectFirebase(lobbyFilepath);
 
     // Make a listener that checks for the lobby being deleted and switches to the opponent left screen
+    lobbyListener = addListenerFirebase(lobbyFilepath, (value) => {
+        if (value == null) {
+            hostID = null;
+            isHost = null;
+            changeToGTNBox("opponent-left-box");
+        }
+    });
 }
 function leaveLobby() {
-
+    
 }
 async function deleteLobby() {
     if (hostID == null) {
