@@ -149,20 +149,6 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
         return null;
     });
 }
-function addListenerFirebase(FILEPATH, FUNCTION) {
-    const REF = ref(database, FILEPATH);
-
-    return onValue(REF, (snapshot) => {
-        const data = snapshot.val();
-
-        FUNCTION(data);
-    });
-}
-function deleteOnDisconnectFirebase(FILEPATH) {
-    const REF = ref(database, FILEPATH);
-
-    onDisconnect(REF).remove();
-}
 
 // Functions to write to the database
 function writeFirebase(FILEPATH, DATA) {
@@ -180,6 +166,22 @@ function writeFirebase(FILEPATH, DATA) {
         console.log("Error with writing to the database");
         console.log(error);
     });
+}
+
+// Functions to create listeners
+function addListenerFirebase(FILEPATH, FUNCTION) {
+    const REF = ref(database, FILEPATH);
+
+    return onValue(REF, (snapshot) => {
+        const data = snapshot.val();
+
+        FUNCTION(data);
+    });
+}
+function deleteOnDisconnectFirebase(FILEPATH) {
+    const REF = ref(database, FILEPATH);
+
+    onDisconnect(REF).remove();
 }
 
 window.authFirebase = authFirebase;

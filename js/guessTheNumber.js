@@ -58,16 +58,20 @@ async function createLobby() {
     // Set up listener that will redirect to the game-box when a guest joins
     // Knows that a guest joins because their name will get written to firebase
     const guestNameFilepath = "lobbies/" + hostID + "/playerInformation/guest/name";
-    const unsubscribe = addListenerFirebase(guestNameFilepath, (name) => {
+    removeOnOpponentJoinListener = addListenerFirebase(guestNameFilepath, (name) => {
         if (name != "null" && name != undefined) {
             console.log("host");
             startGame();
-            unsubscribe();
+            removeOnOpponentJoinListener();
         }
     });
 }
 async function searchForLobby() {
     const lobbyList = await readFirebase("lobbies");
+    if (lobbyList == null || lobbyList == undefined) {
+        document.getElementById("no-lobbies").innerHTML = ("There are no lobbies available at the moment");
+        return;
+    }
     
     var haveFoundLobby = false;
     Object.entries(lobbyList).forEach(([lobbyHostID, lobbyInfo]) => {
@@ -116,7 +120,11 @@ function setUpOnDisconnect() {
     });
 }
 function leaveLobby() {
-    removeLobbyListener();
+    // Cancel all of the listeners
+    if (removeLobbyListener != null) removeLobbyListener();
+    if (removeGuessListener != null) removeGuessListener();
+    if (removeRematchListener != null) removeRematchListener();
+    if (removeOnOpponentJoinListener != null) removeOnOpponentJoinListener();
     
     changeToGTNBox("landing-page-box");
 
@@ -168,7 +176,7 @@ async function startGame() {
 
     // Make a listener that, when whoseTurn changes, that checks for winning and swaps the gamebox
     const lobbyFilePath = "lobbies/" + hostID;
-    const unsubscribe = addListenerFirebase(whoseTurnFilepath, async () => {
+    removeGuessListener = addListenerFirebase(whoseTurnFilepath, async () => {
         const lobby = await readFirebase(lobbyFilePath);
         if (lobby == undefined) return;
 
@@ -245,10 +253,10 @@ function endGame(whoWon, number, unsub) {
 
     // Set up listener that will tell the user if the other player wants to play again
     const opponentWantsRematchFilepath = (isHost) ? "lobbies/" + hostID + "/playerInformation/guest/wantsRematch" : "lobbies/" + hostID + "/playerInformation/host/wantsRematch";
-    const unsubscribe = addListenerFirebase(opponentWantsRematchFilepath, (data) => {
+    removeRematchListener = addListenerFirebase(opponentWantsRematchFilepath, (data) => {
         if (data == true) {
             document.getElementById("rematch").innerHTML = "Your friend wants to play again!";
-            unsubscribe();
+            removeRematchListener();
         }
     });
 }
@@ -287,10 +295,10 @@ async function requestRematch() {
     } else {
         changeToGTNBox("waiting-for-rematch-box");
 
-        const unsubscribe = addListenerFirebase(opponentWantsRematchFilepath, (data) => {
+        removeRematchListener = addListenerFirebase(opponentWantsRematchFilepath, (data) => {
             if (data == true) {
                 startGame();
-                unsubscribe();
+                removeRematchListener();
             }
         });
     }
