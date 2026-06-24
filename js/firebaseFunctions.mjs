@@ -50,7 +50,6 @@ function authFirebase() {
     });
 }
 function getUserIDFirebase() {
-    console.log("getting user ID"); //DIAG
     var auth = getAuth();
     if (auth.currentUser == null) {
         return null;
@@ -65,13 +64,7 @@ function signInWithPreviousAccount() {
 
     onAuthStateChanged(AUTH, (user) => {
         if (user) {
-            // console.log("User doesn't need to sign in"); //DIAG
-
             showBody();
-            
-            // if (currentPage.includes("registration.html")) {
-            //     window.location.href = "index.html";
-            // }
         } else {
             // Go to registration page and show it            
             if (currentPage.includes("registration.html")) {
@@ -99,6 +92,8 @@ function logoutFirebase() {
     const AUTH = getAuth();
     signOut(AUTH).then(() => {
         console.log("Sign out successful");
+        sessionStorage.removeItem("photoURL");
+        sessionStorage.removeItem("username");
     }).catch((error) => {
         console.log("Error with signing out");
         console.log(error);

@@ -12,8 +12,6 @@ async function signUp() {
 	if (userID == undefined || userID == null) {
 		googleAuth = await authFirebase();
 		userID = googleAuth.user.uid;
-		
-		sessionStorage.setItem("photoURL", googleAuth.user.photoURL);
 	}
 
 	// Redirect to the appropriate box
@@ -29,8 +27,6 @@ async function login() {
 	
 	const googleAuth = await authFirebase();
 	const userID = googleAuth.user.uid;
-
-	sessionStorage.setItem("photoURL", googleAuth.user.photoURL);
 
 	var isUser = await checkIsUser(userID);
 	if (isUser) {
@@ -81,6 +77,7 @@ async function submit() {
 	};
 	const USER_PUBLIC_DETAILS = {
 		name: NAME,
+		photoURL: sessionStorage.getItem("photoURL"),
 		skill: SKILL,
 		winRate: 0.00,
 		gamesPlayed: GAMES_PLAYED,

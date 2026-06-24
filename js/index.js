@@ -4,6 +4,20 @@ const tbody = document.querySelector(".leaderboard tbody");
 var desiredNumberOfRows = 5;
 var sortedBy = "mazeGameHighScore";
 
+// Displays the user's name and profile pic
+async function greetUser() {
+    // Keep running until userID is not null
+    if (getUserIDFirebase() == null) {
+        setTimeout(greetUser, 300);
+        return;
+    }
+
+    const userDetailsFilepath = "userPublicDetails/" + getUserIDFirebase();
+    var userDetails = await readFirebase(userDetailsFilepath);
+    
+    document.getElementById("username").innerHTML = userDetails.name;
+}
+
 // ------------------------------------------------------------------------------
 // Functions for sorting the leaderboard and adding rows to the table
 // ------------------------------------------------------------------------------
@@ -73,7 +87,6 @@ function editRow(row) {
     editCell.querySelector(".close-btn").addEventListener("click", () => cancelEdit(row, oldRowHTML));
     editCell.querySelector(".check-btn").addEventListener("click", () => submitEdit(row));
 }
-
 // Runs when the check is clicked for submitting an edit
 async function submitEdit(row) {
     // Get the updated values from the input fields and store them in an object
@@ -91,7 +104,6 @@ async function submitEdit(row) {
     // Redisplay the leaderboard
     sortBy(sortedBy, document.querySelector(".sort-by"));
 }
-
 // Runs when the X is clicked for canceling an edit
 function cancelEdit(row, oldRowHTML) {
     // Change the cells back to their original values
@@ -99,4 +111,5 @@ function cancelEdit(row, oldRowHTML) {
 }
 
 // By default, sort by maze game high score
+greetUser();
 sortBy(sortedBy, document.querySelector(".default-sort-by"));
