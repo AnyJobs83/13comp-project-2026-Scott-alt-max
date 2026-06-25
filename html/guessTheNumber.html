@@ -28,7 +28,7 @@
             </div>
         </nav>
         <main>
-            <div class="gtn-box " id="landing-page-box">
+            <div class="gtn-box default-box" id="landing-page-box">
                 <p id="no-lobbies"></p>
                 <button onclick="createLobby()">
                     create lobby
@@ -41,19 +41,19 @@
                 <h2>Go get a friend</h2>
                 <button onclick="leaveLobby()">Cancel matchmaking</button>
             </div>
-            <div class="gtn-box game-box default-box" id="your-turn-box">
+            <div class="gtn-box game-box" id="your-turn-box">
                 <h2>Guess the number</h2>
                 <div class="vs-container">
                     <div class="profile-display">
-                        <div>Profile Pic</div>
-                        <p>Username</p>
+                        <div class="profile-pic-cont"><div class="profile-pic" id="user-profile-pic"></div></div>
+                        <div id="user-username">Username</div>
                     </div>
                     <div class="vs">
                         <p>VS</p>
                     </div>
                     <div class="profile-display">
-                        <div>Profile Pic</div>
-                        <p>Username</p>
+                        <div class="profile-pic-cont"><div class="profile-pic" id="opponent-profile-pic"></div></div>
+                        <div id="opponent-username">Username</div>
                     </div>
                 </div>
                 <p id="opponent-guess"></p>

@@ -4,7 +4,6 @@ import { getDatabase, ref, set, get, update, query, orderByChild, limitToFirst, 
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
 
 var database;
-var googleAuth;
 var userID;
 
 // Functions to initialise and authenticate
@@ -33,8 +32,7 @@ function authFirebase() {
     PROVIDER.setCustomParameters({
         prompt: 'select_account'
     });
-    return signInWithPopup(AUTH, PROVIDER).then((result) => {
-        googleAuth = result;
+    return signInWithPopup(AUTH, PROVIDER).then((googleAuth) => {
         console.log(googleAuth); //DIAG
 
         console.log("Authentication successful"); //DIAG

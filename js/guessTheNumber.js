@@ -18,8 +18,11 @@ async function createLobby() {
 
     hostID = await getUserIDFirebase();
 
-    const hostNameFilePath = "userPublicDetails/" + hostID + "/name";
-    const hostName = await readFirebase(hostNameFilePath);
+    const userInfoFilepath = "userPublicDetails/" + hostID;
+    const userInfo = await readFirebase(userInfoFilepath);
+    const hostName = userInfo.name;
+    const hostPhotoURL = userInfo.photoURL;
+    //TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
 
     if (hostName == null || hostID == null) {
         console.log("hostName:" + hostName);
@@ -152,14 +155,19 @@ async function guess() {
     writeFirebase(whoseTurnFilePath, newWhoseTurn);
 }
 async function startGame() {
+    const playerInformationFilepath = "lobbies/" + hostID + "/playerInformation";
+    const lobbyFilePath = "lobbies/" + hostID;
+
     // Reset both players wantsRematch if the players want to player again
     if (isHost) {
-        const playerInformationFilepath = "lobbies/" + hostID + "/playerInformation";
         var playerInformation = await readFirebase(playerInformationFilepath);
         playerInformation.guest.wantsRematch = "null";
         playerInformation.host.wantsRematch = "null";
         await writeFirebase(playerInformationFilepath, playerInformation);
     }
+
+    // Patch the players profile pictures and usernames
+    await patchPlayersProfiles();
 
     // This is the first time the user has landed on the game page
     // Therefore, they cannot be shown the other users guess, or if they are too high or too low,
@@ -175,7 +183,6 @@ async function startGame() {
     }
 
     // Make a listener that, when whoseTurn changes, that checks for winning and swaps the gamebox
-    const lobbyFilePath = "lobbies/" + hostID;
     removeGuessListener = addListenerFirebase(whoseTurnFilepath, async () => {
         const lobby = await readFirebase(lobbyFilePath);
         if (lobby == undefined) return;
@@ -188,6 +195,17 @@ async function startGame() {
             displayGameBox(lobby.playerInformation);
         }
     });
+
+    async function patchPlayersProfiles() {
+        var playerInformation = await readFirebase(playerInformationFilepath);
+
+        if (isHost) {
+            document.getElementById("user-username").innerHTML = playerInformation.host.name;
+            //document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
+            document.getElementById("opponent-username").innerHTML = playerInformation.guest.name;
+            //document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
+        }
+    }
 }
 async function displayGameBox(playerInformation) {
     const whoseTurnFilepath = "lobbies/" + hostID + "/gameInformation/whoseTurn";

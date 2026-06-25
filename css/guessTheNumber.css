@@ -25,6 +25,9 @@ main {
     border: 2px solid black;
     border-radius: 32px;
 
+    padding-left: 24px;
+    padding-right: 24px;
+
     display: none;
     flex-direction: column;
     position: relative;
@@ -45,7 +48,34 @@ main {
     width: 100%;
     display: flex;
     text-align: center;
+    margin-bottom: 24px;
+}
+.vs-container .vs {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 .vs-container div {
     flex: 1 1 0;
+}
+.profile-display {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+.profile-display .profile-pic {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    margin-bottom: 24px;
+    
+    background-color: gray;
+    
+    /* This will get set by the java script */
+    /* background-image: url('path/to/your-image.jpg'); */
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
 }

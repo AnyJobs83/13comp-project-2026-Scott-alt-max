@@ -16,6 +16,7 @@ async function greetUser() {
     var userDetails = await readFirebase(userDetailsFilepath);
     
     document.getElementById("username").innerHTML = userDetails.name;
+    document.getElementById("profile-picture").style.backgroundImage = `url(${userDetails.photoURL})`;
 }
 
 // ------------------------------------------------------------------------------
