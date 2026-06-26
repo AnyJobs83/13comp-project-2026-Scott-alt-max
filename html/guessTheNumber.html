@@ -23,7 +23,8 @@
                     </div>
                 </div>
                 <div class="profile-button">
-                    <div class="profile-pic"><div>
+                    <div id="profile-picture">
+                    </div>
                 </div>
             </div>
         </nav>
@@ -63,6 +64,19 @@
             </div>
             <div class="gtn-box game-box" id="not-your-turn-box">
                 <h1 id="how-far-off"></h1>
+                <div class="vs-container">
+                    <div class="profile-display">
+                        <div class="profile-pic-cont"><div class="profile-pic" class="user-profile-pic"></div></div>
+                        <div class="user-username">Username</div>
+                    </div>
+                    <div class="vs">
+                        <p>VS</p>
+                    </div>
+                    <div class="profile-display">
+                        <div class="profile-pic-cont"><div class="profile-pic" class="opponent-profile-pic"></div></div>
+                        <div class="opponent-username">Username</div>
+                    </div>
+                </div>
                 <p>Waiting for your opponent to guess . . .</p>
                 <button onclick="leaveLobby()">Quit</button>
             </div>
@@ -86,4 +100,5 @@
 
     <script type="module" src="../js/firebaseFunctions.mjs"></script>
     <script src="../js/guessTheNumber.js"></script>
+    <script src="../js/nav.js" defer></script>
 </html>

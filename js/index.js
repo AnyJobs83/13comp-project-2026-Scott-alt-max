@@ -4,21 +4,6 @@ const tbody = document.querySelector(".leaderboard tbody");
 var desiredNumberOfRows = 5;
 var sortedBy = "mazeGameHighScore";
 
-// Displays the user's name and profile pic
-async function greetUser() {
-    // Keep running until userID is not null
-    if (getUserIDFirebase() == null) {
-        setTimeout(greetUser, 300);
-        return;
-    }
-
-    const userDetailsFilepath = "userPublicDetails/" + getUserIDFirebase();
-    var userDetails = await readFirebase(userDetailsFilepath);
-    
-    document.getElementById("username").innerHTML = userDetails.name;
-    document.getElementById("profile-picture").style.backgroundImage = `url(${userDetails.photoURL})`;
-}
-
 // ------------------------------------------------------------------------------
 // Functions for sorting the leaderboard and adding rows to the table
 // ------------------------------------------------------------------------------
@@ -112,5 +97,4 @@ function cancelEdit(row, oldRowHTML) {
 }
 
 // By default, sort by maze game high score
-greetUser();
 sortBy(sortedBy, document.querySelector(".default-sort-by"));

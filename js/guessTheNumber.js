@@ -18,18 +18,6 @@ async function createLobby() {
 
     hostID = await getUserIDFirebase();
 
-    const userInfoFilepath = "userPublicDetails/" + hostID;
-    const userInfo = await readFirebase(userInfoFilepath);
-    const hostName = userInfo.name;
-    const hostPhotoURL = userInfo.photoURL;
-    //TODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODOTODO
-
-    if (hostName == null || hostID == null) {
-        console.log("hostName:" + hostName);
-        console.log("hostID:" + hostID);
-        return;
-    }
-
     const lobbyInformation = {
         "gameInformation": {
             "number": numToGuess,
@@ -37,12 +25,14 @@ async function createLobby() {
         },
         "playerInformation": {
             "host": {
-                "name": hostName,
+                "name": sessionStorage.getItem("username"),
+                "photoURL" : sessionStorage.getItem("userPhotoURL"),
                 "latestGuess" : "null",
                 "wantsRematch" : "null"
             },
             "guest": {
                 "name" : "null",
+                "photoURL" : "null",
                 "latestGuess" : "null",
                 "wantsRematch" : "null"
             }
@@ -95,14 +85,17 @@ async function searchForLobby() {
         // Create a listner that checks for the lobby getting deleted, which happens when anyone quits or disconnects
         setUpOnDisconnect();
 
-        // Write the guestName to firebase
-        const guestNameFilePath = `userPublicDetails/${await getUserIDFirebase()}/name`;
-        const guestName = await readFirebase(guestNameFilePath);
+        // Write the guest's name and guest's photoURL to firebase
+        const guestName = sessionStorage.getItem("username");
+        const guestPhotoURL = sessionStorage.getItem("userPhotoURL");
 
-        const playerNameFilepath = `lobbies/${hostID}/playerInformation/guest/name`;
-        await writeFirebase(playerNameFilepath, guestName);
+        const guestPhotoURLFilepath = `lobbies/${hostID}/playerInformation/guest/photoURL`;
+        await writeFirebase(guestPhotoURLFilepath, guestPhotoURL);
         
-        // Change user to the game page
+        const guestNameFilepath = `lobbies/${hostID}/playerInformation/guest/name`;
+        await writeFirebase(guestNameFilepath, guestName);
+
+        // Change user to the game page and start the game
         startGame();
     }
 }
@@ -201,9 +194,15 @@ async function startGame() {
 
         if (isHost) {
             document.getElementById("user-username").innerHTML = playerInformation.host.name;
-            //document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
+            document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
             document.getElementById("opponent-username").innerHTML = playerInformation.guest.name;
-            //document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
+            document.getElementById("opponent-profile-pic").style.backgroundImage = `url(${playerInformation.guest.photoURL})`;
+        } else {
+            //document.getElementsByClassName("dohickey").forEach(element => element.innerHTML = "smth");
+            document.getElementById("user-username").innerHTML = playerInformation.guest.name;
+            document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.guest.photoURL})`;
+            document.getElementById("opponent-username").innerHTML = playerInformation.host.name;
+            document.getElementById("opponent-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
         }
     }
 }

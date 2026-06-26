@@ -90,7 +90,7 @@ function logoutFirebase() {
     const AUTH = getAuth();
     signOut(AUTH).then(() => {
         console.log("Sign out successful");
-        sessionStorage.removeItem("photoURL");
+        sessionStorage.removeItem("userPhotoURL");
         sessionStorage.removeItem("username");
     }).catch((error) => {
         console.log("Error with signing out");
@@ -145,19 +145,16 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
 
 // Functions to write to the database
 function writeFirebase(FILEPATH, DATA) {
-    if (typeof FILEPATH != "string") {
-        console.log(FILEPATH);
-        throw new Error("You are passing a filepath to the write function that isnt a string");
-    }
-
     const REF = ref(database, FILEPATH);
+    // console.log("about to write data : " + DATA);
 
     set(REF, DATA).then(() => {
-        //console.log("Written the following information to the database:");
-        //console.log(DATA);
+        // console.log("Written the following information to the database:");
+        // console.log(DATA);
     }).catch((error) => {
         console.log("Error with writing to the database");
         console.log(error);
+        error;
     });
 }
 
