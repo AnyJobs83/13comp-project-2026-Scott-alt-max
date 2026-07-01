@@ -10,15 +10,13 @@ var sortedBy = "mazeGameHighScore";
 
 async function sortBy(key, element) {
     // Show the loading sign while waiting for the database to respond
-    tbody.innerHTML = `<tr id="loading"><td>Loading. . .</td></tr>`;
+    tbody.innerHTML = `<tr><td>Loading leaderboard. . .</td></tr>`;
 
     sortedBy = key;
 
     // Read the highscores from firebase
-    const FILEPATH = "userPublicDetails";
-    const sortedData = await readSortedFirebase(FILEPATH, key, desiredNumberOfRows);
-    if (sortedData == null) { console.log("woopise sortedData is null"); return; }
-
+    const sortedData = await readSortedFirebase("userPublicDetails", key, desiredNumberOfRows);
+    
     // Clear the table then add the sorted data
     tbody.innerHTML = "";
 
@@ -43,7 +41,9 @@ function prependRow(userID, userInformation, totalRows) {
         <td>${userInformation.mazeGameHighScore}</td>
         <td>${userInformation.gamesPlayed}</td>
         <td>${userInformation.winRate}</td>
-        <td class="edit"><span class="material-symbols-outlined" onclick="editRow(this.parentElement.parentElement)">edit</span></td>`;
+        <td class="edit">
+            <span class="material-symbols-outlined" onclick="editRow(this.parentElement.parentElement)">edit</span>
+        </td>`;
     row.dataset.userID = userID;
     tbody.prepend(row);
 }
@@ -97,4 +97,7 @@ function cancelEdit(row, oldRowHTML) {
 }
 
 // By default, sort by maze game high score
-sortBy(sortedBy, document.querySelector(".default-sort-by"));
+const cancelOnConnectedListener = onConnectToFirebase(() => {
+    sortBy(sortedBy, document.querySelector(".default-sort-by"));
+    cancelOnConnectedListener();
+});

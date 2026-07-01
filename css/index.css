@@ -83,6 +83,9 @@ th:nth-child(2), td:nth-child(2) {
     font-size: 0.8em;
 }
 
+.edit {
+    display: none;
+}
 /* Styling for the edit button */
 .material-symbols-outlined {
     margin: 0;

@@ -12,6 +12,7 @@ async function signUp() {
 	if (userID == undefined || userID == null) {
 		googleAuth = await authFirebase();
 		userID = googleAuth.user.uid;
+		sessionStorage.setItem("photoURL", googleAuth.user.photoURL);
 	}
 
 	// Redirect to the appropriate box

@@ -11,12 +11,12 @@ var removeRematchListener = null;
  *******************************************/
 async function createLobby() {
     isHost = true;
+    hostID = await getUserIDFirebase();
 
     // Write lobby to firebase
     const numToGuess = Math.floor(Math.random() * 101);
     const firstGuesser = (Math.random() < 0.5 ? "host" : "guest");
 
-    hostID = await getUserIDFirebase();
 
     const lobbyInformation = {
         "gameInformation": {
@@ -25,12 +25,14 @@ async function createLobby() {
         },
         "playerInformation": {
             "host": {
+                "ID": hostID,
                 "name": sessionStorage.getItem("username"),
                 "photoURL" : sessionStorage.getItem("userPhotoURL"),
                 "latestGuess" : "null",
                 "wantsRematch" : "null"
             },
             "guest": {
+                "ID": "null",
                 "name" : "null",
                 "photoURL" : "null",
                 "latestGuess" : "null",
@@ -50,8 +52,8 @@ async function createLobby() {
 
     // Set up listener that will redirect to the game-box when a guest joins
     // Knows that a guest joins because their name will get written to firebase
-    const guestNameFilepath = "lobbies/" + hostID + "/playerInformation/guest/name";
-    removeOnOpponentJoinListener = addListenerFirebase(guestNameFilepath, (name) => {
+    const guestIDFilepath = "lobbies/" + hostID + "/playerInformation/guest/ID";
+    removeOnOpponentJoinListener = addListenerFirebase(guestIDFilepath, (name) => {
         if (name != "null" && name != undefined) {
             console.log("host");
             startGame();
@@ -68,7 +70,7 @@ async function searchForLobby() {
     
     var haveFoundLobby = false;
     Object.entries(lobbyList).forEach(([lobbyHostID, lobbyInfo]) => {
-        if (lobbyInfo.playerInformation.guest.name == "null") {
+        if (lobbyInfo.playerInformation.guest.ID == "null") {
             haveFoundLobby = true;
             isHost = false;
             hostID = lobbyHostID;
@@ -85,15 +87,19 @@ async function searchForLobby() {
         // Create a listner that checks for the lobby getting deleted, which happens when anyone quits or disconnects
         setUpOnDisconnect();
 
-        // Write the guest's name and guest's photoURL to firebase
+        // Write the guest's name, photoURL, and ID to firebase
         const guestName = sessionStorage.getItem("username");
         const guestPhotoURL = sessionStorage.getItem("userPhotoURL");
+        const guestID = await getUserIDFirebase();
 
         const guestPhotoURLFilepath = `lobbies/${hostID}/playerInformation/guest/photoURL`;
         await writeFirebase(guestPhotoURLFilepath, guestPhotoURL);
         
         const guestNameFilepath = `lobbies/${hostID}/playerInformation/guest/name`;
         await writeFirebase(guestNameFilepath, guestName);
+
+        const guestIDFilepath = `lobbies/${hostID}/playerInformation/guest/ID`;
+        await writeFirebase(guestIDFilepath, guestID);
 
         // Change user to the game page and start the game
         startGame();
@@ -103,14 +109,20 @@ function setUpOnDisconnect() {
     const lobbyFilepath = "lobbies/" + hostID;
 
     // Make on disconnect that, when the player disconnects, it deletes the lobby
-    if (removeLobbyListener != null) removeLobbyListener();
     deleteOnDisconnectFirebase(lobbyFilepath);
 
     // Make a listener that checks for the lobby being deleted and switches to the opponent left screen
     removeLobbyListener = addListenerFirebase(lobbyFilepath, (value) => {
         if (value == null) {
+            // Cancel all of the listeners
+            if (removeLobbyListener != null) removeLobbyListener();
+            if (removeGuessListener != null) removeGuessListener();
+            if (removeRematchListener != null) removeRematchListener();
+            if (removeOnOpponentJoinListener != null) removeOnOpponentJoinListener();
+
             hostID = null;
             isHost = null;
+            
             changeToGTNBox("opponent-left-box");
         }
     });
@@ -152,7 +164,7 @@ async function startGame() {
     const lobbyFilePath = "lobbies/" + hostID;
 
     // Reset both players wantsRematch if the players want to player again
-    if (isHost) {
+    if (!isHost) {
         var playerInformation = await readFirebase(playerInformationFilepath);
         playerInformation.guest.wantsRematch = "null";
         playerInformation.host.wantsRematch = "null";
@@ -193,16 +205,15 @@ async function startGame() {
         var playerInformation = await readFirebase(playerInformationFilepath);
 
         if (isHost) {
-            document.getElementById("user-username").innerHTML = playerInformation.host.name;
-            document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
-            document.getElementById("opponent-username").innerHTML = playerInformation.guest.name;
-            document.getElementById("opponent-profile-pic").style.backgroundImage = `url(${playerInformation.guest.photoURL})`;
+            document.querySelectorAll(".user-username").forEach(element => element.innerHTML = playerInformation.host.name);
+            document.querySelectorAll(".user-profile-pic").forEach(element => element.style.backgroundImage = `url(${playerInformation.host.photoURL})`);
+            document.querySelectorAll(".opponent-username").forEach(element => element.innerHTML = playerInformation.guest.name);
+            document.querySelectorAll(".opponent-profile-pic").forEach(element => element.style.backgroundImage = `url(${playerInformation.guest.photoURL})`);
         } else {
-            //document.getElementsByClassName("dohickey").forEach(element => element.innerHTML = "smth");
-            document.getElementById("user-username").innerHTML = playerInformation.guest.name;
-            document.getElementById("user-profile-pic").style.backgroundImage = `url(${playerInformation.guest.photoURL})`;
-            document.getElementById("opponent-username").innerHTML = playerInformation.host.name;
-            document.getElementById("opponent-profile-pic").style.backgroundImage = `url(${playerInformation.host.photoURL})`;
+            document.querySelectorAll(".user-username").forEach(element => element.innerHTML = playerInformation.guest.name);
+            document.querySelectorAll(".user-profile-pic").forEach(element => element.style.backgroundImage = `url(${playerInformation.guest.photoURL})`);
+            document.querySelectorAll(".opponent-username").forEach(element => element.innerHTML = playerInformation.host.name);
+            document.querySelectorAll(".opponent-profile-pic").forEach(element => element.style.backgroundImage = `url(${playerInformation.host.photoURL})`);
         }
     }
 }
@@ -238,9 +249,9 @@ async function displayGameBox(playerInformation) {
         const opponentsGuess = (isHost) ? playerInformation.guest.latestGuess : playerInformation.host.latestGuess;
            
         if (opponentsGuess > target) {
-            document.getElementById("opponent-guess").innerHTML = "Your opponent guessed: " + opponentsGuess + " (it was too high)";
+            document.getElementById("opponent-guess").innerHTML = "Your opponent guessed: " + opponentsGuess + " (it was too high) \n";
         } else if (opponentsGuess < target) {
-            document.getElementById("opponent-guess").innerHTML = "Your opponent guessed: " + opponentsGuess + " (it was too low)";
+            document.getElementById("opponent-guess").innerHTML = "Your opponent guessed: " + opponentsGuess + " (it was too low) \n";
         } else {
             console.log("should get redirected");
         }
@@ -258,6 +269,9 @@ function endGame(whoWon, number, unsub) {
     // Start resetting the game so that when both players want a rematch all variables have been reset
     // Does create a race condition between resetting and both players wanting a rematch
     resetGame();
+    
+    // update all of the user's relvent stats in the data
+    updateStats(whoWon);
 
     // Fix the html
     if (whoWon == "host" && isHost || whoWon == "guest" && !isHost) {
@@ -276,26 +290,49 @@ function endGame(whoWon, number, unsub) {
             removeRematchListener();
         }
     });
-}
-function resetGame() {
-    if (isHost) {
-        const numToGuess = Math.floor(Math.random() * 101);
-        const firstGuesser = (Math.random() < 0.5 ? "host" : "guest");
+    
+    function resetGame() {
+        if (isHost) {
+            const numToGuess = Math.floor(Math.random() * 101);
+            const firstGuesser = (Math.random() < 0.5 ? "host" : "guest");
 
-        const newGameInformation = {
-            "number": numToGuess,
-            "whoseTurn": firstGuesser
+            const newGameInformation = {
+                "number": numToGuess,
+                "whoseTurn": firstGuesser
+            }
+
+            // Do not need to await the writes because they do not affect each other
+            const newGameInformationFilepath = "lobbies/" + hostID + "/gameInformation";
+            writeFirebase(newGameInformationFilepath, newGameInformation);
+
+            const guestLatestGuessFilepath = "lobbies/" + hostID + "/playerInformation/guest/latestGuess";
+            writeFirebase(guestLatestGuessFilepath, "null");
+
+            const hostLatestGuessFilepath = "lobbies/" + hostID + "/playerInformation/host/latestGuess";
+            writeFirebase(hostLatestGuessFilepath, "null");
+        }
+    }
+
+    async function updateStats(whoWon) {
+        const userInformationFilepath = `userPublicDetails/${getUserIDFirebase()}`;
+        const oldStats = await readFirebase(userInformationFilepath);
+        console.log(oldStats);
+
+        const newGamesPlayed = Number(oldStats.gamesPlayed) + 1;
+        
+        var gamesWon = Math.round(Number(oldStats.gamesPlayed) * Number(oldStats.winRate));
+        if (whoWon == "host" && isHost || whoWon == "guest" && !isHost) gamesWon++;
+        const newWinRate = gamesWon / newGamesPlayed;
+
+        var newStats = {
+            "gamesPlayed": Number(newGamesPlayed),
+            "mazeGameHighScore": oldStats.mazeGameHighScore,
+            "name": oldStats.name,
+            "photoURL": oldStats.photoURL,
+            "winRate": newWinRate
         }
 
-        // Do not need to await the writes because they do not affect each other
-        const newGameInformationFilepath = "lobbies/" + hostID + "/gameInformation";
-        writeFirebase(newGameInformationFilepath, newGameInformation);
-
-        const guestLatestGuessFilepath = "lobbies/" + hostID + "/playerInformation/guest/latestGuess";
-        writeFirebase(guestLatestGuessFilepath, "null");
-
-        const hostLatestGuessFilepath = "lobbies/" + hostID + "/playerInformation/host/latestGuess";
-        writeFirebase(hostLatestGuessFilepath, "null");
+        writeFirebase(userInformationFilepath, newStats);
     }
 }
 async function requestRematch() {

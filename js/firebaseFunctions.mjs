@@ -5,7 +5,7 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signO
 
 var database;
 
-// Functions to initialise and authenticate
+// Functions for initilisation and authentication
 function initialiseFirebase() {
     console.log("initalising Firebase...") //DIAG
     const FB_GAMECONFIG = {
@@ -42,6 +42,7 @@ function authFirebase() {
     }).catch((error) => {
         console.log("Authentication unsuccessful"); //DIAG
         console.log(error); //DIAG
+        return error;
     });
 }
 function getUserIDFirebase() {
@@ -52,12 +53,20 @@ function getUserIDFirebase() {
         return auth.currentUser.uid;
     }
 }
+function checkIfAdmin() {
+    const adminFilepath = `admins/${getUserIDFirebase}`;
+    readFirebase(adminFilepath).then
+
+    //TODOTODO
+    const snapshot = await get(ref(database, ));
+    const isAdmin = snapshot.val() === true;
+}
 function signInWithPreviousAccount() {
     hideBody();
     const AUTH = getAuth();
     var currentPage = window.location.href;
 
-    onAuthStateChanged(AUTH, (user) => {
+    return onAuthStateChanged(AUTH, (user) => {
         if (user) {
             showBody();
         } else {
@@ -72,6 +81,7 @@ function signInWithPreviousAccount() {
         showBody();
         console.log("Authorisation state detection error");
         console.log(error);
+        return error;
     });
 
     function hideBody() {
@@ -85,13 +95,14 @@ function signInWithPreviousAccount() {
 }
 function logoutFirebase() {
     const AUTH = getAuth();
-    signOut(AUTH).then(() => {
+    return signOut(AUTH).then(() => {
         console.log("Sign out successful");
         sessionStorage.removeItem("userPhotoURL");
         sessionStorage.removeItem("username");
     }).catch((error) => {
         console.log("Error with signing out");
         console.log(error);
+        return(error);
     });
 }
 
@@ -114,7 +125,7 @@ function readFirebase(FILEPATH) {
     }).catch((error) => {
         console.log("Error with reading the database");
         console.log(error);
-        return null
+        return error;
     });
 }
 function readSortedFirebase(FILEPATH, KEY, LIMIT) {
@@ -134,10 +145,8 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
 
         return data;
     }).catch((error) => {
-        console.log("Error with reading the sorted database");
-        console.log(error);
-        return null;
-    });
+        return error;
+    });;
 }
 
 // Functions to write to the database
@@ -145,13 +154,11 @@ function writeFirebase(FILEPATH, DATA) {
     const REF = ref(database, FILEPATH);
     // console.log("about to write data : " + DATA);
 
-    set(REF, DATA).then(() => {
+    return set(REF, DATA).then(() => {
         // console.log("Written the following information to the database:");
         // console.log(DATA);
     }).catch((error) => {
-        console.log("Error with writing to the database");
-        console.log(error);
-        error;
+        return error;
     });
 }
 
@@ -170,6 +177,38 @@ function deleteOnDisconnectFirebase(FILEPATH) {
 
     onDisconnect(REF).remove();
 }
+function onConnectToFirebase(func) {
+    const connectedRef = ref(database, ".info/connected");
+
+    return onValue(connectedRef, (snapshot) => {
+        const connected = snapshot.val();
+
+        if (connected) {
+            func();
+        }
+    });
+}
+
+// Function to return an error as a string
+function getErrorMessageFirebase(error) {
+    switch (error.code) {
+        case "auth/network-request-failed":
+            return "No internet connection.";
+
+        case "auth/invalid-credential":
+            return "Incorrect email or password.";
+
+        case "PERMISSION_DENIED":
+            return "You don't have permission.";
+
+        case "NETWORK_ERROR":
+            return "Network error.";
+
+        default:
+            console.error(error);
+            return "Error.";
+    }
+}
 
 window.authFirebase = authFirebase;
 window.getUserIDFirebase = getUserIDFirebase;
@@ -178,6 +217,7 @@ window.readFirebase = readFirebase;
 window.readSortedFirebase = readSortedFirebase;
 window.addListenerFirebase = addListenerFirebase;
 window.deleteOnDisconnectFirebase = deleteOnDisconnectFirebase;
+window.onConnectToFirebase = onConnectToFirebase;
 window.writeFirebase = writeFirebase;
 initialiseFirebase();
 signInWithPreviousAccount();
