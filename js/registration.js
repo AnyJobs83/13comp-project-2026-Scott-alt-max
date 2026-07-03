@@ -34,16 +34,11 @@ async function login() {
 }
 // Checks if the user is in the database, returns true or false
 async function checkIsUser(userID) {
-	console.log("check is user");
-
 	const FILEPATH = "userPublicDetails/";
 	const USERLIST = await readFirebase(FILEPATH);
-
-	console.log(USERLIST);
 	
 	for (var user in USERLIST) {
 		if (user == userID) {
-			console.log("User is already signed up");
 			return true;
 		}
 	}

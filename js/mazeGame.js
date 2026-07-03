@@ -175,7 +175,6 @@ function RandomWalk(WantToLogTrail) {
         }
     }
     if (WantToLogTrail) {
-        console.log(RandomWalkCoordinates);
     }
     
     // Iterate over the random walk array and change each square to part of the maze, 
@@ -254,7 +253,6 @@ function CreateMaze() {
 // Functions to draw the maze
 function DrawMaze() {
     CreateMaze();
-    console.log(Maze);
     for (var i = 0; i < SquaresTall; i++) {
         DrawHorisontalWalls(i * 2);
         DrawVerticalWalls(i * 2 + 1);
@@ -399,13 +397,9 @@ function MakeButtons() {
 
 // Setup function
 function setup() {
-    console.log("Setup started");
-
     const canvas = createCanvas(GAMEWIDTH + INFORMATIONPANELWIDTH, GAMEHEIGHT);
     canvas.parent("maze-game-container");
     MakeButtons();
-
-    console.log("Setup finished");
 }
 
 // Draw loop
@@ -434,11 +428,9 @@ function draw() {
 
             // Check if the game is over, or that the user has pressed restart (r)
             if (SecondsLeft == 0) {
-                console.log("Game Over");
                 EndGame(3);
                 break;
             } if (kb.pressing('r')) {
-                console.log("Restarting Game");
                 EndGame(0);
                 break;
             }

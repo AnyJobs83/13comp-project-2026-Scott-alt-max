@@ -59,7 +59,6 @@ async function createLobby() {
     const guestIDFilepath = "lobbies/" + hostID + "/playerInformation/guest/ID";
     removeOnOpponentJoinListener = addListenerFirebase(guestIDFilepath, (name) => {
         if (name != "null" && name != undefined) {
-            console.log("host");
             startGame();
             removeOnOpponentJoinListener();
         }
@@ -89,8 +88,6 @@ async function searchForLobby() {
     }
     
     async function joinLobby(lobbyInfo) {
-        console.log("guest");
-
         // Write the guest's name, photoURL, and ID to firebase
         const guestName = sessionStorage.getItem("username");
         const guestPhotoURL = sessionStorage.getItem("userPhotoURL");
@@ -346,7 +343,6 @@ function endGame(whoWon, number, unsub) {
     async function updateStats(whoWon) {
         const userInformationFilepath = `userPublicDetails/${getUserIDFirebase()}`;
         const oldStats = await readFirebase(userInformationFilepath);
-        console.log(oldStats);
 
         const newGamesPlayed = Number(oldStats.gamesPlayed) + 1;
         

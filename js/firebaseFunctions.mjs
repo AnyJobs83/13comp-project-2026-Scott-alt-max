@@ -7,7 +7,6 @@ var database;
 
 // Functions for initilisation and authentication
 function initialiseFirebase() {
-    console.log("initalising Firebase...") //DIAG
     const FB_GAMECONFIG = {
         apiKey: "AIzaSyDyKVbIE0T5C62PV7mFtLm4gAuewL0zPVQ",
         authDomain: "scott-barlow-y13-compsci.firebaseapp.com",
@@ -21,7 +20,6 @@ function initialiseFirebase() {
     
     const FB_GAMEAPP = initializeApp(FB_GAMECONFIG);
     database = getDatabase(FB_GAMEAPP);
-    console.info(database); //DIAG
 }
 function authFirebase() {
     const AUTH = getAuth();
@@ -32,16 +30,9 @@ function authFirebase() {
         prompt: 'select_account'
     });
     return signInWithPopup(AUTH, PROVIDER).then((googleAuth) => {
-        console.log(googleAuth); //DIAG
-
-        console.log("Authentication successful"); //DIAG
-        console.log("User Email: " + googleAuth._tokenResponse.email); //DIAG
-        console.log("User Local ID: " + googleAuth.user.uid); //DIAG
-
         return googleAuth;
     }).catch((error) => {
-        console.log("Authentication unsuccessful"); //DIAG
-        console.log(error); //DIAG
+        console.log(error);
         return error;
     });
 }
@@ -55,7 +46,6 @@ function getUserIDFirebase() {
 }
 function checkIfAdmin() {
     const adminFilepath = `admins/${getUserIDFirebase()}`;
-    console.log(adminFilepath);
 
     return readFirebase(adminFilepath).then((snapshot) => {
         if (snapshot == true) {
@@ -83,7 +73,6 @@ function signInWithPreviousAccount() {
         }
     }, (error) => {
         showBody();
-        console.log("Authorisation state detection error");
         console.log(error);
         return error;
     });
@@ -100,11 +89,9 @@ function signInWithPreviousAccount() {
 function logoutFirebase() {
     const AUTH = getAuth();
     return signOut(AUTH).then(() => {
-        console.log("Sign out successful");
         sessionStorage.removeItem("userPhotoURL");
         sessionStorage.removeItem("username");
     }).catch((error) => {
-        console.log("Error with signing out");
         console.log(error);
         return(error);
     });
@@ -118,16 +105,11 @@ function readFirebase(FILEPATH) {
         var data = snapshot.val();
 
         if (data != null) {
-            //console.log("Successfully read database information:");
-            //console.log(data);
             return data;
         } else {
-            console.log("Attempting to read a value that doesn't exist");
-            console.log(FILEPATH);
             return null
         }
     }).catch((error) => {
-        console.log("Error with reading the database");
         console.log(error);
         return error;
     });
@@ -156,11 +138,8 @@ function readSortedFirebase(FILEPATH, KEY, LIMIT) {
 // Functions to write to the database
 function writeFirebase(FILEPATH, DATA) {
     const REF = ref(database, FILEPATH);
-    // console.log("about to write data : " + DATA);
 
     return set(REF, DATA).then(() => {
-        // console.log("Written the following information to the database:");
-        // console.log(DATA);
     }).catch((error) => {
         return error;
     });

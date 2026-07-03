@@ -22,7 +22,6 @@ async function sortBy(key, element) {
 
     var trueNumberOfRows = sortedData.length;
     for(var i = 0; i < trueNumberOfRows; i++) {
-        //console.log(sortedData[i].userInformation, tbody.childElementCount);
         prependRow(sortedData[i].userID, sortedData[i].userInformation, trueNumberOfRows);
     };
 
