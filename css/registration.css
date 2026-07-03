@@ -88,7 +88,6 @@ p {
 }
 .reg-link:hover{
     cursor: pointer;
-    background-color: grey;
     text-decoration: underline;
 }
 .red {
@@ -100,54 +99,59 @@ p {
 
 /* Css for the form */
 form {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto auto;
     margin-bottom: 16px;
 }
-form .feild {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
+form .field {
     position: relative;
+    margin-top: 8px;
+    min-width: 130px;
 }
-form .feild .label-wrapper {
-    width: 100%;
-    margin: 0;
-}
-form .feild .label-wrapper label {
+form .field .label-wrapper label {
     font-size: 16px;
 }
-form .feild .input-wrapper {
+form .field .input-wrapper {
     padding: 8px;
     padding-top: 2px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
-form .feild .input-wrapper input {
-    width: 90%;
-    height: 1.3em;
-    margin: 0px;
-    padding: 0 0 0 4px;
+form .field .input-wrapper input, select {
+    width: 100%;
+    padding: 8px;
     border: none;
     border-bottom: 2px solid black;
     background-color: rgb(1, 235, 235);
-    border-radius: 4px 4px 0px 0px;
+    border-radius: 2px px 0px 0px;
+    font-size: 0.76em;
 }
-form .feild .input-wrapper input:focus {
+form .field .input-wrapper input:focus {
     background-color: rgb(19, 185, 185);
+    outline: none;
+}
+.select-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+.select-wrapper .spacer {
+    width: 3%;
+    background-color: rgb(1, 235, 235);
+    border-bottom: 2px solid black;
+}
+select:focus {
     outline: none;
 }
 .invalid {
     border: 2px solid red !important;
 }
-#error-message {
-    display: none;
+#error-messages-cont div {
     width: 100%;
+    display: flex;
     justify-content: center;
     padding: 0 0 16px 0;
 }
-#error-message p {
+#error-messages-cont div p {
     background-color: black;
     color: red;
     width: 70%;

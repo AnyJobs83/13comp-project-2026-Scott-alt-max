@@ -54,12 +54,16 @@ function getUserIDFirebase() {
     }
 }
 function checkIfAdmin() {
-    const adminFilepath = `admins/${getUserIDFirebase}`;
-    readFirebase(adminFilepath).then
+    const adminFilepath = `admins/${getUserIDFirebase()}`;
+    console.log(adminFilepath);
 
-    //TODOTODO
-    const snapshot = await get(ref(database, ));
-    const isAdmin = snapshot.val() === true;
+    return readFirebase(adminFilepath).then((snapshot) => {
+        if (snapshot == true) {
+            return true;
+        } else {
+            return false;
+        }
+    });
 }
 function signInWithPreviousAccount() {
     hideBody();
@@ -119,7 +123,7 @@ function readFirebase(FILEPATH) {
             return data;
         } else {
             console.log("Attempting to read a value that doesn't exist");
-            console.log(data);
+            console.log(FILEPATH);
             return null
         }
     }).catch((error) => {
@@ -216,6 +220,7 @@ window.logoutFirebase = logoutFirebase;
 window.readFirebase = readFirebase;
 window.readSortedFirebase = readSortedFirebase;
 window.addListenerFirebase = addListenerFirebase;
+window.checkIfAdmin = checkIfAdmin;
 window.deleteOnDisconnectFirebase = deleteOnDisconnectFirebase;
 window.onConnectToFirebase = onConnectToFirebase;
 window.writeFirebase = writeFirebase;

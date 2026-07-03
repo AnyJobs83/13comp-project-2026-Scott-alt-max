@@ -5,9 +5,6 @@
  */
 
 async function signUp() {
-	console.log("sign up");
-
-	// If the user isn't already signed in, run googleAuth
 	var userID = getUserIDFirebase();
 	if (userID == undefined || userID == null) {
 		googleAuth = await authFirebase();
@@ -24,10 +21,9 @@ async function signUp() {
 	}
 }
 async function login() {
-	console.log("login");
-	
 	const googleAuth = await authFirebase();
 	const userID = googleAuth.user.uid;
+	sessionStorage.setItem("photoURL", googleAuth.user.photoURL);
 
 	var isUser = await checkIsUser(userID);
 	if (isUser) {
@@ -55,56 +51,124 @@ async function checkIsUser(userID) {
 }
 
 async function submit() {
-	console.log("submit");
-
-	// Called in reverse order from the html so that the checkvalid function
-	// puts the user on the first feild that they haven't filled out
-	const GAMES_PLAYED = checkValid(document.getElementById('games-played'));
-	const SKILL = checkValid(document.getElementById('skill'));
-	const EMAIL = checkValid(document.getElementById('email'));
-	const ADDRESS = checkValid(document.getElementById('address'));
-	const AGE = checkValid(document.getElementById('age'));
-	const NAME = checkValid(document.getElementById('name'));
-	
-	if (NAME == null || AGE == null || ADDRESS == null || EMAIL == null || SKILL == null || GAMES_PLAYED == null) {
-		console.log("Not all fields are valid");
-		return;
-	}
+	if (checkFormIsValid() == false) return;
 
 	const USER_PRIVATE_DETAILS = {
-		age: AGE,
-		address: ADDRESS,
-		email: EMAIL,
+		age: Number(document.getElementById('age').value),
+		address: document.getElementById('address').value,
+		email: document.getElementById('email').value,
 	};
 	const USER_PUBLIC_DETAILS = {
-		name: NAME,
+		name: document.getElementById('name').value,
 		photoURL: sessionStorage.getItem("photoURL"),
-		skill: SKILL,
+		skill: document.getElementById('skill').value,
 		winRate: 0.00,
-		gamesPlayed: GAMES_PLAYED,
+		gamesPlayed: Number(document.getElementById('games-played').value),
 		mazeGameHighScore: 0
 	};
 	
 	var userID = await getUserIDFirebase();
+
 	const PRIVATE_FILEPATH = "userPrivateDetails/" + userID;
 	const PUBLIC_FILEPATH = "userPublicDetails/" + userID;
 	await writeFirebase(PRIVATE_FILEPATH, USER_PRIVATE_DETAILS);
 	await writeFirebase(PUBLIC_FILEPATH, USER_PUBLIC_DETAILS);
 
 	goToHomePage();
-	
-	function checkValid(inputObject) {
-		var value = inputObject.value;
 
-		if (!value || value == "null") {
-			inputObject.classList.add("invalid");
-			inputObject.focus();
+	function checkFormIsValid() {
+		// Reset the error messages
+		document.getElementById("error-messages-cont").innerHTML = "";
+		document.querySelectorAll(".invalid").forEach((element) => {
+			element.classList.remove("invalid");
+		});
 
-			document.getElementById("error-message").style.display = "flex";
-			return null;
-		} else { 
-			inputObject.classList.remove("invalid");
-			return value.trim();
+		var isValid = true;
+		var shownNullError = false;
+		var messageCount = 0;
+
+		// Check everything
+		const NAME = document.getElementById('name');
+		const AGE = document.getElementById('age');
+		const ADDRESS = document.getElementById('address');
+		const EMAIL = document.getElementById('email');
+		const SKILL = document.getElementById('skill');
+		const GAMES_PLAYED = document.getElementById('games-played');
+
+		checkNull(NAME);
+		checkName(NAME);
+		checkNull(AGE);
+		checkAge(AGE);
+		checkNull(ADDRESS);
+		checkNull(EMAIL);
+		checkNull(SKILL);
+		checkNull(GAMES_PLAYED);
+		checkGamesPlayed(GAMES_PLAYED);
+		
+		return isValid;
+
+		function checkNull(inputObject) {
+			var value = inputObject.value;
+
+			if (!value || value == "null") {
+				inputObject.classList.add("invalid");
+				if (isValid) inputObject.focus();
+				isValid = false;
+
+				if (messageCount <= 3 && shownNullError == false) {
+					messageCount++;
+					shownNullError = true;
+					showError("You must fill out all fields to continue");
+				}
+			}
+		}
+		function checkName(inputObject) {
+			var value = inputObject.value;
+
+			if (value.length > 30) {
+				inputObject.classList.add("invalid");
+				if (isValid) inputObject.focus();
+				isValid = false;
+
+				if (messageCount <= 3) {
+					messageCount++;
+					showError("Name cannot be longer than 30 characters");
+				}
+			}
+		}
+		function checkAge(inputObject) {
+			var value = inputObject.value;
+
+			if (Number(value) < 0 || Number(value) > 130) {
+				inputObject.classList.add("invalid");
+				if (isValid) inputObject.focus();
+				isValid = false;
+
+				if (messageCount <= 3) {
+					messageCount++;
+					showError("Age must be bewteen 0 and 130");
+				}
+			}
+		}
+		function checkGamesPlayed(inputObject) {
+			var value = inputObject.value;
+
+			if (Number(value) < 0) {
+				inputObject.classList.add("invalid");
+				if (isValid) inputObject.focus();
+				isValid = false;
+
+				if (messageCount <= 3) {
+					messageCount++;
+					showError("You cannot have played a game less than 0 times");
+				}
+			}
+		}
+		function showError(message) {
+			const errorDiv = document.createElement("div");
+			errorDiv.innerHTML = `<p>${message}</p>`;
+
+			document.getElementById("error-messages-cont").appendChild(errorDiv);
 		}
 	}
 }

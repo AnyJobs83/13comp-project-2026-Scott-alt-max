@@ -57,57 +57,59 @@
                 </div>
             </div>
         </div>
-        <div class="reg-box default-box" id="sign-up-box">
+        <div class="reg-box" id="sign-up-box">
             <div class="box-body">
                 <h2>Sign Up</h2>
                 <div class="box-info">
                     <form id="sign-up-form">
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Name:</label></div>
                             <div class="input-wrapper">
-                                <input type="text" id="name" value="Mr Inedible">
+                                <input type="text" id="name" value="Mr Inedible" autofocus>
                             </div>
                         </div>
 
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Age:</label></div>
                             <div class="input-wrapper">
-                                <input type="number" id="age" value="67">
+                                <input type="number" id="age" value="67" min="0" max="130">
                             </div>
                         </div>
 
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Address:</label></div>
                             <div class="input-wrapper">
                                 <input type="text" id="address" value="84-114 Woburn Road">
                             </div>
                         </div>
 
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Email:</label></div>
                             <div class="input-wrapper">
                                 <input type="text" id="email" value="feedback@pizzahut.co.nz">
                             </div>
                         </div>
 
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Skill Level:</label></div>
-                            <div class="input-wrapper">
-                                <input type="text" id="skill" value="trash">
+                            <div class="input-wrapper select-wrapper">
+                                <select id="skill">
+                                    <option>Trash</option>
+                                    <option>Meh</option>
+                                    <option>Goated</option>
+                                </select>
+                                <div class="spacer"></div>
                             </div>
                         </div>
 
-                        <div class="feild">
+                        <div class="field">
                             <div class="label-wrapper"><label>Games Played:</label></div>
                             <div class="input-wrapper">
-                                <input type="number" id="games-played" value="123">
+                                <input type="number" id="games-played" value="123" min="0">
                             </div>
                         </div>
                     </form>
-                    <div id="error-message">
-                        <p>
-                            You must fill out all feilds to continue.
-                        </p>
+                    <div id="error-messages-cont">
                     </div>
                 </div>
             </div>

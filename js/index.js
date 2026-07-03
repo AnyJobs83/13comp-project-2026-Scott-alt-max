@@ -1,6 +1,6 @@
 
 
-const tbody = document.querySelector(".leaderboard tbody");
+const tbody = document.querySelector("#leaderboard tbody");
 var desiredNumberOfRows = 5;
 var sortedBy = "mazeGameHighScore";
 
@@ -52,6 +52,12 @@ function prependRow(userID, userInformation, totalRows) {
 // Functions for all of the admin editing stuff
 // ------------------------------------------------------------------------------
 
+async function showAdminIfAdmin() {
+    if (await checkIfAdmin() == true) {
+        document.getElementById("leaderboard-title").innerHTML = "Admin Leaderboard";
+        document.getElementById("leaderboard").classList.toggle("admin");
+    }
+}
 function editRow(row) {
     // Read the current values from the row and store them as HTML string
     const oldRowHTML = row.innerHTML;
@@ -78,9 +84,9 @@ async function submitEdit(row) {
     // Get the updated values from the input fields and store them in an object
     var editedInformation = {
         name: row.children[1].querySelector(".edit-input").value,
-        mazeGameHighScore: row.children[2].querySelector(".edit-input").value,
-        gamesPlayed: row.children[3].querySelector(".edit-input").value,
-        winRate: row.children[4].querySelector(".edit-input").value
+        mazeGameHighScore: Number(row.children[2].querySelector(".edit-input").value),
+        gamesPlayed: Number(row.children[3].querySelector(".edit-input").value),
+        winRate: Number(row.children[4].querySelector(".edit-input").value)
     }
 
     // Write the updated information to the database
@@ -99,5 +105,6 @@ function cancelEdit(row, oldRowHTML) {
 // By default, sort by maze game high score
 const cancelOnConnectedListener = onConnectToFirebase(() => {
     sortBy(sortedBy, document.querySelector(".default-sort-by"));
+    showAdminIfAdmin();
     cancelOnConnectedListener();
 });

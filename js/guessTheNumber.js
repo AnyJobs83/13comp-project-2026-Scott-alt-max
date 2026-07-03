@@ -13,6 +13,10 @@ async function createLobby() {
     isHost = true;
     hostID = await getUserIDFirebase();
 
+    // Check the user isn't already in a game
+    const lobbyList = await readFirebase("lobbies");
+    if (checkIfUserInGame(lobbyList) == true) return;
+
     // Write lobby to firebase
     const numToGuess = Math.floor(Math.random() * 101);
     const firstGuesser = (Math.random() < 0.5 ? "host" : "guest");
@@ -63,11 +67,14 @@ async function createLobby() {
 }
 async function searchForLobby() {
     const lobbyList = await readFirebase("lobbies");
+
     if (lobbyList == null || lobbyList == undefined) {
-        document.getElementById("no-lobbies").innerHTML = ("There are no lobbies available at the moment");
+        document.getElementById("landing-page-box-error").innerHTML = ("There are no lobbies available at the moment");
         return;
     }
-    
+
+    if (checkIfUserInGame(lobbyList) == true) return;
+
     var haveFoundLobby = false;
     Object.entries(lobbyList).forEach(([lobbyHostID, lobbyInfo]) => {
         if (lobbyInfo.playerInformation.guest.ID == "null") {
@@ -78,32 +85,50 @@ async function searchForLobby() {
         }
     });
     if (!haveFoundLobby) {
-        document.getElementById("no-lobbies").innerHTML = ("There are no lobbies available at the moment");
+        document.getElementById("landing-page-box-error").innerHTML = ("There are no lobbies available at the moment");
     }
     
     async function joinLobby(lobbyInfo) {
         console.log("guest");
 
-        // Create a listner that checks for the lobby getting deleted, which happens when anyone quits or disconnects
-        setUpOnDisconnect();
-
         // Write the guest's name, photoURL, and ID to firebase
         const guestName = sessionStorage.getItem("username");
         const guestPhotoURL = sessionStorage.getItem("userPhotoURL");
         const guestID = await getUserIDFirebase();
-
-        const guestPhotoURLFilepath = `lobbies/${hostID}/playerInformation/guest/photoURL`;
-        await writeFirebase(guestPhotoURLFilepath, guestPhotoURL);
         
-        const guestNameFilepath = `lobbies/${hostID}/playerInformation/guest/name`;
-        await writeFirebase(guestNameFilepath, guestName);
+        // Create a listner that checks for the lobby getting deleted, which happens when anyone quits or disconnects
+        setUpOnDisconnect();
 
-        const guestIDFilepath = `lobbies/${hostID}/playerInformation/guest/ID`;
-        await writeFirebase(guestIDFilepath, guestID);
+        const newGuestInfo = {
+            "ID" : guestID,
+            "name" : guestName,
+            "photoURL" : guestPhotoURL,
+            "latestGuess" : "null",
+            "wantsRematch" : "null"
+        }
 
+        const guestInfoFilepath = `lobbies/${hostID}/playerInformation/guest`;
+        await writeFirebase(guestInfoFilepath, newGuestInfo);
+        
         // Change user to the game page and start the game
         startGame();
     }
+}
+function checkIfUserInGame(lobbyList) {
+    if (lobbyList == null || lobbyList == undefined) return false;
+
+    const userID = getUserIDFirebase();
+    
+    var userInGame = false;
+    Object.entries(lobbyList).forEach(([lobbyHostID, lobbyInfo]) => {
+        if (lobbyHostID == userID) {
+            document.getElementById("landing-page-box-error").innerHTML = (`
+                You may not perform this action, <br> you already have an active lobby
+            `);
+            userInGame = true;
+        }
+    });
+    return userInGame;
 }
 function setUpOnDisconnect() {
     const lobbyFilepath = "lobbies/" + hostID;
@@ -160,15 +185,13 @@ async function guess() {
     writeFirebase(whoseTurnFilePath, newWhoseTurn);
 }
 async function startGame() {
-    const playerInformationFilepath = "lobbies/" + hostID + "/playerInformation";
-    const lobbyFilePath = "lobbies/" + hostID;
-
-    // Reset both players wantsRematch if the players want to player again
-    if (!isHost) {
-        var playerInformation = await readFirebase(playerInformationFilepath);
-        playerInformation.guest.wantsRematch = "null";
-        playerInformation.host.wantsRematch = "null";
-        await writeFirebase(playerInformationFilepath, playerInformation);
+    // Each player resets their wants rematch at the start of the game
+    if (isHost) {
+        const rematchFilepath = "lobbies/" + hostID + "/playerInformation/host/wantsRematch"
+        await writeFirebase(rematchFilepath, "null");
+    } else {
+        const rematchFilepath = "lobbies/" + hostID + "/playerInformation/guest/wantsRematch"
+        await writeFirebase(rematchFilepath, "null");
     }
 
     // Patch the players profile pictures and usernames
@@ -178,18 +201,14 @@ async function startGame() {
     // Therefore, they cannot be shown the other users guess, or if they are too high or too low,
     // Because they have not guessed yet
     // Therefore, do not set up the box, just show the defaults
-    const whoseTurnFilepath = "lobbies/" + hostID + "/gameInformation/whoseTurn";
-    const whoseTurn = await readFirebase(whoseTurnFilepath);
-
-    if ((whoseTurn == "host" && isHost) || (whoseTurn == "guest" && !isHost)) {
-        changeToGTNBox("your-turn-box");
-    } else {
-        changeToGTNBox("not-your-turn-box");
-    }
+    displayGameBox(null, true);
 
     // Make a listener that, when whoseTurn changes, that checks for winning and swaps the gamebox
+    const whoseTurnFilepath = "lobbies/" + hostID + "/gameInformation/whoseTurn";
     removeGuessListener = addListenerFirebase(whoseTurnFilepath, async () => {
+        const lobbyFilePath = "lobbies/" + hostID;
         const lobby = await readFirebase(lobbyFilePath);
+        
         if (lobby == undefined) return;
 
         if (lobby.playerInformation.guest.latestGuess == lobby.gameInformation.number) {
@@ -197,11 +216,12 @@ async function startGame() {
         } else if (lobby.playerInformation.host.latestGuess == lobby.gameInformation.number) {
             endGame("host", lobby.gameInformation.number, removeGuessListener);
         } else {
-            displayGameBox(lobby.playerInformation);
+            displayGameBox(lobby.playerInformation, false);
         }
     });
 
     async function patchPlayersProfiles() {
+        const playerInformationFilepath = "lobbies/" + hostID + "/playerInformation";
         var playerInformation = await readFirebase(playerInformationFilepath);
 
         if (isHost) {
@@ -217,7 +237,7 @@ async function startGame() {
         }
     }
 }
-async function displayGameBox(playerInformation) {
+async function displayGameBox(playerInformation, isFirstTurn) {
     const whoseTurnFilepath = "lobbies/" + hostID + "/gameInformation/whoseTurn";
     const whoseTurn = await readFirebase(whoseTurnFilepath);
 
@@ -225,14 +245,19 @@ async function displayGameBox(playerInformation) {
     const target = await readFirebase(targetFilepath);
 
     if ((whoseTurn == "host" && isHost) || (whoseTurn == "guest" && !isHost)) {
-        setupYourTurnBox(playerInformation, target);
+        setupYourTurnBox(isFirstTurn, playerInformation, target);
         changeToGTNBox("your-turn-box");
     } else {
-        setupNotYourTurnBox(playerInformation, target);
+        setupNotYourTurnBox(isFirstTurn, playerInformation, target);
         changeToGTNBox("not-your-turn-box");
     }
 
-    function setupNotYourTurnBox(playerInformation, target) {
+    function setupNotYourTurnBox(isFirstTurn, playerInformation, target) {
+        if (isFirstTurn) {
+            document.getElementById("how-far-off").innerHTML = "";
+            return;
+        }
+
         // Read the user's previous guess and tell them if they are too high or too low
         const usersGuess = (isHost) ? playerInformation.host.latestGuess : playerInformation.guest.latestGuess;
 
@@ -241,10 +266,15 @@ async function displayGameBox(playerInformation) {
         } else if (usersGuess < target) {
             document.getElementById("how-far-off").innerHTML = usersGuess + " is too low";
         } else {
-            console.log("should get redirected");
+            // Someone has won, listener will redirect
         }
     }
-    function setupYourTurnBox(playerInformation, target) {
+    function setupYourTurnBox(isFirstTurn, playerInformation, target) {
+        if (isFirstTurn) {
+            document.getElementById("opponent-guess").innerHTML = "";
+            return;
+        }
+
         // Display the opponents lastest guess unless they haven't had their first guess yet
         const opponentsGuess = (isHost) ? playerInformation.guest.latestGuess : playerInformation.host.latestGuess;
            
@@ -253,7 +283,7 @@ async function displayGameBox(playerInformation) {
         } else if (opponentsGuess < target) {
             document.getElementById("opponent-guess").innerHTML = "Your opponent guessed: " + opponentsGuess + " (it was too low) \n";
         } else {
-            console.log("should get redirected");
+            // Someone has won, listener will redirect
         }
     }
 }

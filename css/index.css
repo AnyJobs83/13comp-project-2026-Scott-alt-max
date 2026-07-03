@@ -47,17 +47,17 @@ main h2 {
 
 
 /* Leaderboard styling */
-.leaderboard {
+#leaderboard {
     width: 70%;
     border: 2px solid black;
     border-radius: 32px;
     background-color: aqua;
     padding: 1em;
 }
-.leaderboard tr {
+#leaderboard tr {
     display: flex;
 }
-.leaderboard tr:nth-child(odd) {
+#leaderboard tr:nth-child(odd) {
     background-color: #ddd;
 }
 
@@ -85,6 +85,9 @@ th:nth-child(2), td:nth-child(2) {
 
 .edit {
     display: none;
+}
+.admin .edit {
+    display: block;
 }
 /* Styling for the edit button */
 .material-symbols-outlined {
